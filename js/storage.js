@@ -1,18 +1,13 @@
 /* ============================================
    CASH RUSH — Save & Load System
-   Version 0.3
-   Includes premium unlock flag
+   Version 1.0 — Free Version
    ============================================ */
 
 const SAVE_KEY = 'cash_rush_save_v1';
 
-/* Free tier limits */
-const FREE_MAX_DAY = 5;
-const FREE_PRODUCT_IDS = ['bread', 'milk', 'water', 'soda', 'chips'];
-
 function createNewGame() {
   return {
-    version: 3,
+    version: 4,
     day: 1,
     cash: 500,
     level: 1,
@@ -25,7 +20,8 @@ function createNewGame() {
     lastPlayed: new Date().toISOString(),
     tutorialSeen: false,
     dailyHistory: [],
-    premiumUnlocked: false    // ← New in V0.3
+    adsWatched: 0,
+    daysPlayed: 0
   };
 }
 
@@ -47,10 +43,9 @@ function loadGame() {
     var state = JSON.parse(raw);
     if (!state || typeof state !== 'object') return null;
     if (!state.version) return null;
-    // Migrate old saves — add premium field if missing
-    if (state.premiumUnlocked === undefined) {
-      state.premiumUnlocked = false;
-    }
+    // Migrate old fields if missing
+    if (state.adsWatched === undefined) state.adsWatched = 0;
+    if (state.daysPlayed === undefined) state.daysPlayed = 0;
     return state;
   } catch (err) {
     console.error('Load error:', err);
@@ -71,14 +66,10 @@ function hasSave() {
   return localStorage.getItem(SAVE_KEY) !== null;
 }
 
-function isPremium(state) {
-  return state && state.premiumUnlocked === true;
-}
-
 var _autoSaveTimer = null;
 function autoSave(state) {
   if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(function() {
     saveGame(state);
   }, 500);
-}S
+}
