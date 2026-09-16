@@ -1,27 +1,11 @@
 /* ============================================
    CASH RUSH — Main Game Engine
-   Version 0.3 — With Free/Premium split
+   Version 1.0 — Free Ad-Supported Version
    ============================================ */
 
 var gameState = null;
 var dayModifiers = null;
 var currentView = 'dashboard';
-
-/* ---------- FREE TIER LIMITS ---------- */
-var FREE_MAX_DAY = 5;
-var FREE_PRODUCT_IDS = ['bread', 'milk', 'water', 'soda', 'chips'];
-var FREE_ACHIEVEMENT_IDS = ['first_sale', 'first_profit', 'r1000_cash'];
-
-function isGamePremium() {
-  return gameState && gameState.premiumUnlocked === true;
-}
-
-function getVisibleProducts() {
-  if (isGamePremium()) return PRODUCTS;
-  return PRODUCTS.filter(function(p) {
-    return FREE_PRODUCT_IDS.indexOf(p.id) !== -1;
-  });
-}
 
 /* ---------- TUTORIAL ---------- */
 var TUTORIAL_STEPS = [
@@ -135,7 +119,6 @@ function refreshAllUI() {
   renderBuyStockView();
   renderPricingView();
   renderAchievementsView();
-  updatePremiumButton();
 }
 
 function updateTopBar() {
@@ -151,47 +134,13 @@ function updateDashboard() {
   document.getElementById('dashStockValue').textContent = formatRand(getInventoryValue(gameState.inventory));
 }
 
-/* Update Premium view button based on current state */
-function updatePremiumButton() {
-  var btn = document.getElementById('subscribeBtn');
-  if (!btn) return;
-  if (isGamePremium()) {
-    btn.textContent = '✓ PREMIUM UNLOCKED';
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    btn.style.cursor = 'default';
-  } else {
-    btn.textContent = '⭐ UNLOCK PREMIUM — R50';
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-  }
-}
-
-/* ---------- BUY STOCK VIEW (filtered for free users) ---------- */
+/* ---------- BUY STOCK VIEW ---------- */
 function renderBuyStockView() {
   var container = document.getElementById('stockList');
   if (!container) return;
   container.innerHTML = '';
 
-  var visible = getVisibleProducts();
-
-  // Show a premium banner if user is free
-  if (!isGamePremium()) {
-    var banner = document.createElement('div');
-    banner.style.cssText = 'background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid #F59E0B;border-radius:14px;padding:14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;';
-    banner.innerHTML = `
-      <div style="font-size:1.8rem;">⭐</div>
-      <div style="flex:1;">
-        <div style="font-weight:800;color:#92400E;font-size:0.9rem;">FREE TIER</div>
-        <div style="font-size:0.8rem;color:#78350F;">Showing 5 of 25 products. Unlock Premium for all.</div>
-      </div>
-      <button id="unlockFromBuy" style="background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;font-size:0.75rem;cursor:pointer;">UNLOCK</button>
-    `;
-    container.appendChild(banner);
-  }
-
-  visible.forEach(function(p) {
+  PRODUCTS.forEach(function(p) {
     var inv = gameState.inventory[p.id] || { stock: 0 };
     var buyMult = dayModifiers.buyPriceModifiers[p.id] || 1.0;
     var todayBuyPrice = Math.round(p.buyPrice * buyMult * 100) / 100;
@@ -227,13 +176,6 @@ function renderBuyStockView() {
       buyStock(btn.dataset.buy, parseInt(btn.dataset.qty));
     });
   });
-
-  var unlockBtn = document.getElementById('unlockFromBuy');
-  if (unlockBtn) {
-    unlockBtn.addEventListener('click', function() {
-      switchView('premium');
-    });
-  }
 }
 
 function buyStock(productId, qty) {
@@ -255,15 +197,13 @@ function buyStock(productId, qty) {
   refreshAllUI();
 }
 
-/* ---------- PRICING VIEW (filtered) ---------- */
+/* ---------- PRICING VIEW ---------- */
 function renderPricingView() {
   var container = document.getElementById('pricingList');
   if (!container) return;
   container.innerHTML = '';
 
-  var visible = getVisibleProducts();
-
-  visible.forEach(function(p) {
+  PRODUCTS.forEach(function(p) {
     var inv = gameState.inventory[p.id] || { stock: 0, price: p.suggestPrice };
     var unitProfit = inv.price - p.buyPrice;
     var marginPct = inv.price > 0 ? (unitProfit / inv.price * 100).toFixed(0) : 0;
@@ -325,14 +265,11 @@ function setPrice(productId, price) {
   renderPricingView();
 }
 
-/* ---------- ACHIEVEMENTS VIEW (filtered) ---------- */
+/* ---------- ACHIEVEMENTS VIEW ---------- */
 function renderAchievementsView() {
   var container = document.getElementById('achievementsList');
   if (!container) return;
   var list = getAchievementList(gameState);
-  if (!isGamePremium()) {
-    list = list.filter(function(a) { return FREE_ACHIEVEMENT_IDS.indexOf(a.id) !== -1; });
-  }
   var html = '';
   list.forEach(function(a) {
     var opacity = a.unlocked ? '1' : '0.45';
@@ -349,14 +286,6 @@ function renderAchievementsView() {
       </div>
     `;
   });
-  if (!isGamePremium()) {
-    html += `
-      <div style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid #F59E0B;border-radius:14px;padding:16px;margin-top:14px;text-align:center;">
-        <div style="font-size:0.8rem;font-weight:700;color:#92400E;margin-bottom:6px;">⭐ UNLOCK ALL ACHIEVEMENTS</div>
-        <div style="font-size:0.75rem;color:#78350F;">Get 5 more achievements with Premium.</div>
-      </div>
-    `;
-  }
   container.innerHTML = html;
 }
 
@@ -394,6 +323,7 @@ function runStore() {
   gameState.totalProfit += financials.netProfit;
   gameState.totalCustomers += result.customersServed;
   gameState.totalItemsSold += financials.itemsSold;
+  gameState.daysPlayed = (gameState.daysPlayed || 0) + 1;
 
   gameState.dailyHistory.unshift({
     day: gameState.day,
@@ -461,18 +391,6 @@ function renderDailyReport(financials, result) {
     `;
   }
 
-  var nextDayNum = gameState.day + 1;
-  var isLocked = !isGamePremium() && nextDayNum > FREE_MAX_DAY;
-
-  var nextDayBtnHtml = isLocked
-    ? `<button id="unlockPremiumCta" style="width:100%;padding:18px;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:1rem;letter-spacing:1px;cursor:pointer;box-shadow:0 8px 24px rgba(245,158,11,0.35);">
-         ⭐ UNLOCK PREMIUM — R50
-       </button>
-       <div style="text-align:center;font-size:0.75rem;color:#92400E;margin-top:10px;font-weight:600;">Free trial complete · One-time purchase · No subscription</div>`
-    : `<button id="nextDayBtn" style="width:100%;padding:18px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:1rem;letter-spacing:1px;cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,0.35);">
-         ▶ START DAY ${nextDayNum}
-       </button>`;
-
   container.innerHTML = `
     ${eventHtml}
     <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(37,99,235,0.10);border:1px solid #DBEAFE;margin-bottom:16px;">
@@ -509,16 +427,12 @@ function renderDailyReport(financials, result) {
       </div>
       ${topProductsHtml}
     </div>
-    ${nextDayBtnHtml}
+    <button id="nextDayBtn" style="width:100%;padding:18px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:1rem;letter-spacing:1px;cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,0.35);">
+      ▶ START DAY ${gameState.day + 1}
+    </button>
   `;
 
-  if (isLocked) {
-    document.getElementById('unlockPremiumCta').addEventListener('click', function() {
-      switchView('premium');
-    });
-  } else {
-    document.getElementById('nextDayBtn').addEventListener('click', startNextDay);
-  }
+  document.getElementById('nextDayBtn').addEventListener('click', startNextDay);
 }
 
 function startNextDay() {
@@ -528,6 +442,11 @@ function startNextDay() {
 
   if (dayModifiers.event) {
     showToast('📢 ' + dayModifiers.event.name + ': ' + dayModifiers.event.description, 'info');
+  }
+
+  // Show interstitial ad every 3 days
+  if (gameState.day % 3 === 0 && typeof showInterstitialAd === 'function') {
+    showInterstitialAd();
   }
 
   switchView('dashboard');
@@ -547,48 +466,21 @@ function showToast(message, type) {
   }, 2500);
 }
 
-/* ---------- PREMIUM UNLOCK ---------- */
-function requestPremiumUnlock() {
-  // In the Play Store version, this will call Google Play Billing
-  // via Capacitor. For now, we test with a confirm dialog.
-
-  // Check if Capacitor + Billing plugin is available (Play Store version)
-  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CashRushBilling) {
-    window.Capacitor.Plugins.CashRushBilling.purchase({ productId: 'premium_unlock' })
-      .then(function(result) {
-        if (result && result.success) {
-          unlockPremium();
-        } else {
-          showToast('Purchase cancelled.', 'info');
-        }
-      })
-      .catch(function(err) {
-        console.error('Purchase error:', err);
-        showToast('Payment could not be started. Please try again.', 'error');
-      });
-    return;
-  }
-
-  // Fallback for web / testing
-  if (confirm('⭐ UNLOCK CASH RUSH PREMIUM ⭐\n\n' +
-              'One-time purchase: R50\n\n' +
-              'What you get:\n' +
-              '✓ Unlimited game days\n' +
-              '✓ All 25 products (currently 5)\n' +
-              '✓ All 20 random events\n' +
-              '✓ All 8 achievements\n' +
-              '✓ Future content updates\n\n' +
-              'On the Play Store version, this will open Google Play Billing.\n\n' +
-              'For testing, unlock now?')) {
-    unlockPremium();
-  }
+/* ---------- ADS (Placeholder for Capacitor) ---------- */
+function showInterstitialAd() {
+  // This will be replaced with real AdMob code after Capacitor wrap
+  console.log('📺 Interstitial ad would show here');
 }
 
-function unlockPremium() {
-  gameState.premiumUnlocked = true;
-  saveGame(gameState);
-  refreshAllUI();
-  showToast('⭐ Premium unlocked! Enjoy all features!', 'success');
+function watchRewardedAd() {
+  // Placeholder — will be replaced with real AdMob code
+  if (confirm('📺 Watch a short video ad to earn R100 in-game cash?\n\n(This is a test — real ads will play on the Play Store version.)')) {
+    gameState.cash += 100;
+    gameState.adsWatched = (gameState.adsWatched || 0) + 1;
+    saveGame(gameState);
+    refreshAllUI();
+    showToast('💰 +R100 earned! Thanks for watching!', 'success');
+  }
 }
 
 /* ---------- EVENT WIRING ---------- */
@@ -601,23 +493,20 @@ function attachUIEvents() {
       showTutorial();
     }
   });
-  document.getElementById('premiumBtnLanding').addEventListener('click', function() {
-    showGameScreen();
-    switchView('premium');
-  });
   document.getElementById('nextTutorialBtn').addEventListener('click', nextTutorialStep);
   document.getElementById('skipTutorialBtn').addEventListener('click', finishTutorial);
   document.querySelectorAll('.nav-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { switchView(btn.dataset.view); });
   });
   document.getElementById('runStoreBtn').addEventListener('click', runStore);
-  document.getElementById('subscribeBtn').addEventListener('click', function() {
-    if (isGamePremium()) {
-      showToast('You already have Premium!', 'info');
-      return;
-    }
-    requestPremiumUnlock();
-  });
+
+  // Watch ad button on dashboard
+  var watchAdBtn = document.getElementById('watchAdBtn');
+  if (watchAdBtn) {
+    watchAdBtn.addEventListener('click', watchRewardedAd);
+  }
+
+  // Settings tab reset
   document.getElementById('resetGameBtn').addEventListener('click', function() {
     if (confirm('Are you sure? This will permanently delete your current local game progress.')) {
       deleteSave();
