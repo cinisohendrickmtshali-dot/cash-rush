@@ -1,24 +1,12 @@
 /* ============================================
    CASH RUSH — Main Game Engine
-   Version 0.1
-   
-   This file ties together:
-   - products.js (product data)
-   - customers.js (customer types)
-   - events.js (random events)
-   - economy.js (financial calculations)
-   - storage.js (save/load)
-   - achievements.js (achievements)
-   
-   And controls the entire game UI.
+   Version 0.2
    ============================================ */
 
-/* ---------- GLOBAL STATE ---------- */
 var gameState = null;
-var dayModifiers = null;      // Today's event effects
+var dayModifiers = null;
 var currentView = 'dashboard';
 
-/* ---------- TUTORIAL DATA ---------- */
 var TUTORIAL_STEPS = [
   { icon: '💰', title: 'Welcome to Cash Rush', text: 'You have R500 to start your business. Let\'s learn how to build it.' },
   { icon: '📦', title: 'Buy Stock', text: 'Buy products from your supplier at wholesale prices. You can\'t sell what you don\'t have.' },
@@ -29,28 +17,27 @@ var TUTORIAL_STEPS = [
 ];
 var tutorialIndex = 0;
 
-/* ---------- INITIALIZE THE GAME ---------- */
 function initGame() {
-  // Try to load existing save
   var saved = loadGame();
   if (saved) {
     gameState = saved;
+    // Make sure new products exist in inventory (migration from V0.1)
+    PRODUCTS.forEach(function(p) {
+      if (!gameState.inventory[p.id]) {
+        gameState.inventory[p.id] = { stock: 0, price: p.suggestPrice };
+      }
+    });
   } else {
     gameState = createNewGame();
-    // Initialize inventory with all products at zero stock
     PRODUCTS.forEach(function(p) {
       gameState.inventory[p.id] = { stock: 0, price: p.suggestPrice };
     });
     saveGame(gameState);
   }
 
-  // Roll today's event
   dayModifiers = applyEventEffects(rollDailyEvent());
-
-  // Attach all UI events
   attachUIEvents();
 
-  // Show the correct screen
   if (!gameState.tutorialSeen) {
     showTutorial();
   } else {
@@ -59,7 +46,6 @@ function initGame() {
   }
 }
 
-/* ---------- SCREEN SWITCHING ---------- */
 function showTutorial() {
   document.getElementById('landingScreen').classList.add('hidden');
   document.getElementById('tutorialScreen').classList.remove('hidden');
@@ -79,7 +65,6 @@ function showLanding() {
   document.getElementById('gameScreen').classList.add('hidden');
 }
 
-/* ---------- TUTORIAL ---------- */
 function renderTutorialStep() {
   var step = TUTORIAL_STEPS[tutorialIndex];
   document.getElementById('tutorialStepNum').textContent = 'STEP ' + (tutorialIndex + 1) + ' / ' + TUTORIAL_STEPS.length;
@@ -87,7 +72,6 @@ function renderTutorialStep() {
   document.getElementById('tutorialTitle').textContent = step.title;
   document.getElementById('tutorialText').textContent = step.text;
 
-  // Progress dots
   var prog = document.getElementById('tutorialProgress');
   prog.innerHTML = '';
   for (var i = 0; i < TUTORIAL_STEPS.length; i++) {
@@ -96,13 +80,8 @@ function renderTutorialStep() {
     prog.appendChild(dot);
   }
 
-  // Button label on last step
   var nextBtn = document.getElementById('nextTutorialBtn');
-  if (tutorialIndex === TUTORIAL_STEPS.length - 1) {
-    nextBtn.textContent = 'Start Playing 🎮';
-  } else {
-    nextBtn.textContent = 'Next →';
-  }
+  nextBtn.textContent = tutorialIndex === TUTORIAL_STEPS.length - 1 ? 'Start Playing 🎮' : 'Next →';
 }
 
 function nextTutorialStep() {
@@ -121,26 +100,18 @@ function finishTutorial() {
   refreshAllUI();
 }
 
-/* ---------- VIEW SWITCHING ---------- */
 function switchView(viewName) {
   currentView = viewName;
-  var views = document.querySelectorAll('.game-view');
-  views.forEach(function(v) { v.classList.add('hidden'); });
-
+  document.querySelectorAll('.game-view').forEach(function(v) { v.classList.add('hidden'); });
   var targetId = 'view' + viewName.charAt(0).toUpperCase() + viewName.slice(1);
   var target = document.getElementById(targetId);
   if (target) target.classList.remove('hidden');
-
-  // Update nav buttons
   document.querySelectorAll('.nav-btn').forEach(function(b) {
     b.classList.toggle('active', b.dataset.view === viewName);
   });
-
-  // Refresh the content of the view we just opened
   refreshAllUI();
 }
 
-/* ---------- REFRESH ALL UI ---------- */
 function refreshAllUI() {
   updateTopBar();
   updateDashboard();
@@ -162,7 +133,6 @@ function updateDashboard() {
   document.getElementById('dashStockValue').textContent = formatRand(getInventoryValue(gameState.inventory));
 }
 
-/* ---------- BUY STOCK VIEW ---------- */
 function renderBuyStockView() {
   var container = document.getElementById('stockList');
   if (!container) return;
@@ -172,12 +142,10 @@ function renderBuyStockView() {
     var inv = gameState.inventory[p.id] || { stock: 0 };
     var buyMult = dayModifiers.buyPriceModifiers[p.id] || 1.0;
     var todayBuyPrice = Math.round(p.buyPrice * buyMult * 100) / 100;
-    var unitProfit = p.suggestPrice - todayBuyPrice;
+    var isDiscounted = buyMult < 1.0;
 
     var card = document.createElement('div');
-    card.className = 'stock-item';
     card.style.cssText = 'background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 4px rgba(37,99,235,0.06);border:1px solid #DBEAFE;';
-
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -189,7 +157,7 @@ function renderBuyStockView() {
         </div>
         <div style="text-align:right;">
           <div style="font-size:0.7rem;color:#64748B;font-weight:700;">BUY</div>
-          <div style="font-weight:800;color:#2563EB;">${formatRand(todayBuyPrice)}</div>
+          <div style="font-weight:800;color:${isDiscounted ? '#10B981' : '#2563EB'};">${formatRand(todayBuyPrice)}</div>
         </div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -198,11 +166,9 @@ function renderBuyStockView() {
         <button data-buy="${p.id}" data-qty="10" class="buy-btn" style="flex:1;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">+10</button>
       </div>
     `;
-
     container.appendChild(card);
   });
 
-  // Wire up buy buttons
   container.querySelectorAll('.buy-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       buyStock(btn.dataset.buy, parseInt(btn.dataset.qty));
@@ -213,7 +179,6 @@ function renderBuyStockView() {
 function buyStock(productId, qty) {
   var product = getProductById(productId);
   if (!product) return;
-
   var buyMult = dayModifiers.buyPriceModifiers[productId] || 1.0;
   var unitCost = Math.round(product.buyPrice * buyMult * 100) / 100;
   var totalCost = unitCost * qty;
@@ -225,13 +190,11 @@ function buyStock(productId, qty) {
 
   gameState.cash -= totalCost;
   gameState.inventory[productId].stock += qty;
-
   saveGame(gameState);
   showToast('Bought ' + qty + 'x ' + product.emoji + ' ' + product.name, 'success');
   refreshAllUI();
 }
 
-/* ---------- PRICING VIEW ---------- */
 function renderPricingView() {
   var container = document.getElementById('pricingList');
   if (!container) return;
@@ -240,11 +203,10 @@ function renderPricingView() {
   PRODUCTS.forEach(function(p) {
     var inv = gameState.inventory[p.id] || { stock: 0, price: p.suggestPrice };
     var unitProfit = inv.price - p.buyPrice;
-    var marginPct = (unitProfit / inv.price * 100).toFixed(0);
+    var marginPct = inv.price > 0 ? (unitProfit / inv.price * 100).toFixed(0) : 0;
 
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 4px rgba(37,99,235,0.06);border:1px solid #DBEAFE;';
-
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -265,11 +227,9 @@ function renderPricingView() {
         <button data-price-plus="${p.id}" style="width:44px;height:44px;border-radius:8px;border:1px solid #DBEAFE;background:#fff;font-weight:800;font-size:1.2rem;cursor:pointer;">+</button>
       </div>
     `;
-
     container.appendChild(card);
   });
 
-  // Wire up pricing controls
   container.querySelectorAll('[data-price-minus]').forEach(function(btn) {
     btn.addEventListener('click', function() { changePrice(btn.dataset.priceMinus, -0.5); });
   });
@@ -286,8 +246,7 @@ function renderPricingView() {
 function changePrice(productId, delta) {
   var inv = gameState.inventory[productId];
   if (!inv) return;
-  var newPrice = Math.max(0, Math.round((inv.price + delta) * 100) / 100);
-  inv.price = newPrice;
+  inv.price = Math.max(0, Math.round((inv.price + delta) * 100) / 100);
   saveGame(gameState);
   renderPricingView();
 }
@@ -303,11 +262,9 @@ function setPrice(productId, price) {
   renderPricingView();
 }
 
-/* ---------- ACHIEVEMENTS VIEW ---------- */
 function renderAchievementsView() {
   var container = document.getElementById('achievementsList');
   if (!container) return;
-
   var list = getAchievementList(gameState);
   var html = '';
   list.forEach(function(a) {
@@ -328,9 +285,22 @@ function renderAchievementsView() {
   container.innerHTML = html;
 }
 
-/* ---------- RUN STORE (DAY SIMULATION) ---------- */
+/* ---------- DIFFICULTY RAMP ---------- */
+/* Base customers increase as the days progress.
+   Day 1-5:    15
+   Day 6-10:   18
+   Day 11-20:  22
+   Day 21-30:  26
+   Day 31+:    30 */
+function getBaseCustomerCount(day) {
+  if (day <= 5) return 15;
+  if (day <= 10) return 18;
+  if (day <= 20) return 22;
+  if (day <= 30) return 26;
+  return 30;
+}
+
 function runStore() {
-  // Check if player has any stock
   var totalStock = getTotalStock(gameState.inventory);
   if (totalStock === 0) {
     showToast('You have no stock! Buy products first.', 'error');
@@ -338,13 +308,10 @@ function runStore() {
     return;
   }
 
-  // Simulate the day
-  var result = simulateDay(gameState.inventory, dayModifiers, 15);
-
-  // Calculate financials for today
+  var baseCustomers = getBaseCustomerCount(gameState.day);
+  var result = simulateDay(gameState.inventory, dayModifiers, baseCustomers);
   var financials = calculateFinancials(result.sales, []);
 
-  // Apply extra cost from event
   var extraCost = dayModifiers.extraCost || 0;
   if (extraCost > 0) {
     financials.expenses += extraCost;
@@ -352,14 +319,13 @@ function runStore() {
     gameState.cash -= extraCost;
   }
 
-  // Apply to state
   gameState.cash += financials.revenue;
   gameState.totalRevenue += financials.revenue;
   gameState.totalProfit += financials.netProfit;
   gameState.totalCustomers += result.customersServed;
   gameState.totalItemsSold += financials.itemsSold;
 
-  // Save daily report
+  // Save daily report with top products
   gameState.dailyHistory.unshift({
     day: gameState.day,
     revenue: financials.revenue,
@@ -368,23 +334,20 @@ function runStore() {
     expenses: financials.expenses,
     netProfit: financials.netProfit,
     itemsSold: financials.itemsSold,
-    customersServed: result.customersServed
+    customersServed: result.customersServed,
+    sales: result.sales
   });
   if (gameState.dailyHistory.length > 30) gameState.dailyHistory.length = 30;
 
-  // Show report BEFORE incrementing day
   renderDailyReport(financials, result);
   switchView('runStore');
 
-  // Check achievements
   var newAchievements = checkAchievements(gameState);
-  if (newAchievements.length > 0) {
-    newAchievements.forEach(function(a) {
-      setTimeout(function() {
-        showToast('🏆 Achievement unlocked: ' + a.name, 'success');
-      }, 800);
-    });
-  }
+  newAchievements.forEach(function(a) {
+    setTimeout(function() {
+      showToast('🏆 Achievement unlocked: ' + a.name, 'success');
+    }, 800);
+  });
 
   saveGame(gameState);
 }
@@ -404,11 +367,37 @@ function renderDailyReport(financials, result) {
   var profitColor = financials.netProfit >= 0 ? '#10B981' : '#EF4444';
   var profitSign = financials.netProfit >= 0 ? '+' : '';
 
+  // Top products of the day
+  var topProductsHtml = '';
+  if (result.sales && result.sales.length > 0) {
+    var sortedSales = result.sales.slice().sort(function(a, b) {
+      return (b.sellingPrice * b.quantity) - (a.sellingPrice * a.quantity);
+    }).slice(0, 3);
+
+    topProductsHtml = `
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #E2E8F0;">
+        <div style="font-size:0.7rem;color:#64748B;font-weight:800;letter-spacing:1px;margin-bottom:10px;">🏆 TOP SELLERS TODAY</div>
+        ${sortedSales.map(function(s, i) {
+          var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+          return `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span>${medal}</span>
+                <span style="font-size:1.3rem;">${s.emoji}</span>
+                <span style="font-weight:700;color:#0F172A;">${s.productName}</span>
+              </div>
+              <div style="font-weight:800;color:#2563EB;">${s.quantity} sold</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
   container.innerHTML = `
     ${eventHtml}
     <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(37,99,235,0.10);border:1px solid #DBEAFE;margin-bottom:16px;">
       <div style="font-size:0.75rem;color:#2563EB;font-weight:800;letter-spacing:1.5px;margin-bottom:14px;">DAY ${gameState.day} · REPORT</div>
-      
       <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E2E8F0;">
         <span style="color:#64748B;font-weight:600;">Revenue</span>
         <span style="font-weight:800;color:#0F172A;">${formatRand(financials.revenue)}</span>
@@ -429,7 +418,6 @@ function renderDailyReport(financials, result) {
         <span style="color:#0F172A;font-weight:800;">NET PROFIT</span>
         <span style="font-weight:900;font-size:1.2rem;color:${profitColor};">${profitSign}${formatRand(financials.netProfit)}</span>
       </div>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
         <div style="background:#EFF6FF;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:0.65rem;color:#2563EB;font-weight:800;letter-spacing:1px;">ITEMS SOLD</div>
@@ -440,8 +428,8 @@ function renderDailyReport(financials, result) {
           <div style="font-weight:800;color:#0F172A;font-size:1.2rem;">${result.customersServed}</div>
         </div>
       </div>
+      ${topProductsHtml}
     </div>
-
     <button id="nextDayBtn" style="width:100%;padding:18px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:1rem;letter-spacing:1px;cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,0.35);">
       ▶ START DAY ${gameState.day + 1}
     </button>
@@ -455,7 +443,6 @@ function startNextDay() {
   dayModifiers = applyEventEffects(rollDailyEvent());
   saveGame(gameState);
 
-  // Check if new event happened
   if (dayModifiers.event) {
     showToast('📢 ' + dayModifiers.event.name + ': ' + dayModifiers.event.description, 'info');
   }
@@ -463,7 +450,6 @@ function startNextDay() {
   switchView('dashboard');
 }
 
-/* ---------- TOASTS ---------- */
 function showToast(message, type) {
   var container = document.getElementById('toastContainer');
   var toast = document.createElement('div');
@@ -477,9 +463,7 @@ function showToast(message, type) {
   }, 2500);
 }
 
-/* ---------- EVENT WIRING ---------- */
 function attachUIEvents() {
-  // Landing buttons
   document.getElementById('playFreeBtn').addEventListener('click', function() {
     if (gameState.tutorialSeen) {
       showGameScreen();
@@ -492,25 +476,15 @@ function attachUIEvents() {
     showGameScreen();
     switchView('premium');
   });
-
-  // Tutorial buttons
   document.getElementById('nextTutorialBtn').addEventListener('click', nextTutorialStep);
   document.getElementById('skipTutorialBtn').addEventListener('click', finishTutorial);
-
-  // Bottom nav
   document.querySelectorAll('.nav-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { switchView(btn.dataset.view); });
   });
-
-  // Run store
   document.getElementById('runStoreBtn').addEventListener('click', runStore);
-
-  // Premium subscribe (placeholder for V0.4)
   document.getElementById('subscribeBtn').addEventListener('click', function() {
     showToast('Paystack payments arrive in a future version.', 'info');
   });
-
-  // Reset game
   document.getElementById('resetGameBtn').addEventListener('click', function() {
     if (confirm('Are you sure? This will permanently delete your current local game progress.')) {
       deleteSave();
@@ -519,5 +493,4 @@ function attachUIEvents() {
   });
 }
 
-/* ---------- KICK OFF ---------- */
 document.addEventListener('DOMContentLoaded', initGame);
