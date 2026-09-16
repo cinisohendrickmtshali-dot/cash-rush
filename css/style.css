@@ -1,6 +1,6 @@
 /* ============================================
    CASH RUSH — Version 0.1
-   Clean & Professional Business Simulator
+   Light Sky Blue & Mint Theme
    ============================================ */
 
 * {
@@ -11,53 +11,61 @@
 }
 
 :root {
-  /* Core palette — Deep navy + gold accent */
-  --navy-900: #0a0f1e;
-  --navy-800: #0f172a;
-  --navy-700: #1e293b;
-  --navy-600: #334155;
-  --navy-500: #475569;
-  --navy-400: #64748b;
-  --navy-300: #94a3b8;
-  --navy-200: #cbd5e1;
-  --navy-100: #e2e8f0;
-  --navy-50: #f1f5f9;
+  /* Light background palette */
+  --bg: #EFF6FF;           /* Sky blue background */
+  --bg-alt: #F0FDF4;       /* Soft mint background */
+  --white: #FFFFFF;
+  --card-border: #DBEAFE;
 
-  /* Gold / money accent */
-  --gold-700: #92400e;
-  --gold-600: #b45309;
-  --gold-500: #d97706;
-  --gold-400: #f59e0b;
-  --gold-300: #fbbf24;
-  --gold-100: #fef3c7;
+  /* Primary blue */
+  --blue-700: #1D4ED8;
+  --blue-600: #2563EB;
+  --blue-500: #3B82F6;
+  --blue-400: #60A5FA;
+  --blue-300: #93C5FD;
+  --blue-100: #DBEAFE;
+  --blue-50: #EFF6FF;
 
-  /* Success green */
-  --green-600: #059669;
-  --green-500: #10b981;
-  --green-100: #d1fae5;
+  /* Mint / money accent */
+  --mint-700: #047857;
+  --mint-600: #059669;
+  --mint-500: #10B981;
+  --mint-400: #34D399;
+  --mint-100: #D1FAE5;
+  --mint-50: #ECFDF5;
 
-  /* Danger red */
-  --red-600: #dc2626;
-  --red-500: #ef4444;
-  --red-100: #fee2e2;
+  /* Gold for money numbers */
+  --gold-700: #B45309;
+  --gold-600: #D97706;
+  --gold-500: #F59E0B;
+  --gold-300: #FCD34D;
+  --gold-100: #FEF3C7;
 
-  /* Neutrals */
-  --white: #ffffff;
-  --off-white: #f8fafc;
+  /* Danger */
+  --red-600: #DC2626;
+  --red-500: #EF4444;
+  --red-100: #FEE2E2;
 
-  /* Spacing scale */
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
+  /* Text */
+  --text-900: #0F172A;
+  --text-700: #334155;
+  --text-500: #64748B;
+  --text-400: #94A3B8;
+  --text-300: #CBD5E1;
+
+  /* Spacing */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
   --radius-xl: 28px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-  --shadow-gold: 0 8px 24px rgba(217, 119, 6, 0.35);
+  --shadow-sm: 0 2px 4px rgba(37, 99, 235, 0.06);
+  --shadow: 0 4px 16px rgba(37, 99, 235, 0.10);
+  --shadow-lg: 0 12px 32px rgba(37, 99, 235, 0.15);
+  --shadow-blue: 0 8px 24px rgba(37, 99, 235, 0.35);
+  --shadow-gold: 0 8px 24px rgba(245, 158, 11, 0.35);
 
-  /* Typography */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -68,8 +76,8 @@ html, body {
 
 body {
   font-family: var(--font);
-  background: var(--navy-800);
-  color: var(--navy-800);
+  background: var(--bg);
+  color: var(--text-900);
   line-height: 1.5;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -77,7 +85,7 @@ body {
 }
 
 /* ============================================
-   SCREENS (Landing / Tutorial / Game)
+   SCREENS
    ============================================ */
 
 .screen {
@@ -109,17 +117,12 @@ body {
   50% { transform: translateY(-10px); }
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
 /* ============================================
-   LANDING SCREEN
+   LANDING SCREEN — Light & Fresh
    ============================================ */
 
 .landing-screen {
-  background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-800) 45%, #1e1b4b 100%);
+  background: linear-gradient(160deg, #EFF6FF 0%, #E0F2FE 50%, #ECFDF5 100%);
   justify-content: center;
   align-items: center;
   padding: 32px 20px;
@@ -129,7 +132,7 @@ body {
   max-width: 480px;
   width: 100%;
   text-align: center;
-  color: var(--white);
+  color: var(--text-900);
   animation: slideUp 0.6s ease;
 }
 
@@ -137,16 +140,15 @@ body {
   font-size: 5rem;
   margin-bottom: 12px;
   animation: bounce 2.5s ease-in-out infinite;
-  filter: drop-shadow(0 8px 24px rgba(251, 191, 36, 0.4));
+  filter: drop-shadow(0 8px 24px rgba(37, 99, 235, 0.25));
 }
 
 .landing-title {
   font-size: 2.75rem;
   font-weight: 900;
   letter-spacing: 4px;
-  color: var(--white);
   margin-bottom: 6px;
-  background: linear-gradient(180deg, var(--white) 0%, var(--gold-300) 100%);
+  background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-500) 50%, var(--mint-500) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -156,8 +158,8 @@ body {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--gold-300);
-  font-weight: 600;
+  color: var(--blue-600);
+  font-weight: 700;
   margin-bottom: 28px;
 }
 
@@ -165,24 +167,27 @@ body {
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 3px;
-  color: var(--white);
+  color: var(--blue-700);
   padding: 10px 20px;
-  border-top: 2px solid var(--gold-500);
-  border-bottom: 2px solid var(--gold-500);
+  border-top: 2px solid var(--blue-500);
+  border-bottom: 2px solid var(--blue-500);
   display: inline-block;
   margin-bottom: 24px;
 }
 
 .landing-description {
   font-size: 1rem;
-  color: var(--navy-200);
+  color: var(--text-700);
   margin-bottom: 32px;
   line-height: 1.6;
 }
 
 .landing-description strong {
-  color: var(--gold-300);
+  color: var(--gold-600);
   font-weight: 800;
+  background: var(--gold-100);
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .landing-buttons {
@@ -210,26 +215,27 @@ body {
 }
 
 .btn-play {
-  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
-  color: var(--navy-900);
-  box-shadow: var(--shadow-gold);
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-500));
+  color: var(--white);
+  box-shadow: var(--shadow-blue);
 }
 
 .btn-play:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(217, 119, 6, 0.5);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
 }
 
 .btn-premium {
-  background: transparent;
-  color: var(--white);
-  border: 2px solid var(--navy-500);
+  background: var(--white);
+  color: var(--blue-700);
+  border: 2px solid var(--blue-200, #BFDBFE);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-premium:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--gold-400);
-  color: var(--gold-300);
+  background: var(--blue-50);
+  border-color: var(--blue-500);
+  color: var(--blue-700);
 }
 
 .landing-features {
@@ -240,17 +246,18 @@ body {
 }
 
 .feature-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--white);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
-  padding: 12px 10px;
+  padding: 14px 10px;
   font-size: 0.85rem;
-  color: var(--navy-200);
+  color: var(--text-700);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .feature-item span {
@@ -259,19 +266,20 @@ body {
 
 .landing-footer {
   font-size: 0.75rem;
-  color: var(--navy-400);
+  color: var(--text-500);
   line-height: 1.8;
 }
 
 .badge-version {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--blue-100);
+  color: var(--blue-700);
+  border: 1px solid var(--blue-300);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.7rem;
   letter-spacing: 1px;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 6px;
 }
 
@@ -280,7 +288,7 @@ body {
    ============================================ */
 
 .tutorial-screen {
-  background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-700) 100%);
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-alt) 100%);
   justify-content: center;
   align-items: center;
   padding: 32px 20px;
@@ -295,13 +303,14 @@ body {
   text-align: center;
   box-shadow: var(--shadow-lg);
   animation: slideUp 0.5s ease;
+  border: 1px solid var(--card-border);
 }
 
 .tutorial-step-number {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
-  color: var(--gold-600);
+  color: var(--blue-600);
   margin-bottom: 20px;
 }
 
@@ -314,14 +323,14 @@ body {
 .tutorial-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--navy-800);
+  color: var(--text-900);
   margin-bottom: 12px;
   line-height: 1.3;
 }
 
 .tutorial-text {
   font-size: 1rem;
-  color: var(--navy-500);
+  color: var(--text-700);
   line-height: 1.6;
   margin-bottom: 24px;
   min-height: 72px;
@@ -338,12 +347,12 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--navy-200);
+  background: var(--blue-100);
   transition: all 0.3s ease;
 }
 
 .progress-dot.active {
-  background: var(--gold-500);
+  background: var(--blue-600);
   width: 24px;
   border-radius: 4px;
 }
@@ -366,23 +375,24 @@ body {
 }
 
 .btn-skip {
-  background: var(--navy-100);
-  color: var(--navy-500);
+  background: var(--bg);
+  color: var(--text-500);
+  border: 1px solid var(--card-border);
 }
 
 .btn-skip:hover {
-  background: var(--navy-200);
+  background: var(--blue-50);
 }
 
 .btn-next {
-  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-500));
   color: var(--white);
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-blue);
 }
 
 .btn-next:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
 }
 
 /* ============================================
@@ -390,20 +400,19 @@ body {
    ============================================ */
 
 .game-screen {
-  background: var(--navy-50);
+  background: var(--bg);
   display: flex;
   flex-direction: column;
 }
 
-/* Top bar */
 .game-topbar {
-  background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+  background: linear-gradient(135deg, var(--blue-700), var(--blue-600));
   padding: 14px 16px;
   padding-top: calc(14px + env(safe-area-inset-top));
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.2);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -417,7 +426,7 @@ body {
 .topbar-label {
   font-size: 0.65rem;
   letter-spacing: 1.5px;
-  color: var(--navy-300);
+  color: var(--blue-100);
   font-weight: 700;
   margin-bottom: 2px;
 }
@@ -431,10 +440,9 @@ body {
 .topbar-cash .topbar-value {
   color: var(--gold-300);
   font-size: 1.25rem;
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  text-shadow: 0 0 20px rgba(252, 211, 77, 0.5);
 }
 
-/* Main content */
 .game-main {
   flex: 1;
   padding: 20px 16px 100px;
@@ -448,18 +456,17 @@ body {
 .view-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--navy-800);
+  color: var(--text-900);
   margin-bottom: 6px;
 }
 
 .view-subtitle {
   font-size: 0.9rem;
-  color: var(--navy-400);
+  color: var(--text-500);
   margin-bottom: 20px;
   line-height: 1.5;
 }
 
-/* Stat grid on dashboard */
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -472,13 +479,13 @@ body {
   border-radius: var(--radius);
   padding: 16px 14px;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--navy-100);
+  border: 1px solid var(--card-border);
 }
 
 .stat-label {
   font-size: 0.65rem;
   letter-spacing: 1.5px;
-  color: var(--navy-400);
+  color: var(--blue-600);
   font-weight: 700;
   margin-bottom: 6px;
 }
@@ -486,20 +493,19 @@ body {
 .stat-value {
   font-size: 1.35rem;
   font-weight: 800;
-  color: var(--navy-800);
+  color: var(--text-900);
   line-height: 1.2;
 }
 
-/* Big action card */
 .big-action-card {
-  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-500));
   border-radius: var(--radius);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   color: var(--white);
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-blue);
   margin-top: 8px;
 }
 
@@ -516,13 +522,13 @@ body {
 
 .big-action-sub {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 2px;
 }
 
 .btn-big-primary {
-  background: var(--navy-900);
-  color: var(--white);
+  background: var(--white);
+  color: var(--blue-700);
   border: none;
   padding: 16px;
   border-radius: var(--radius-sm);
@@ -540,24 +546,23 @@ body {
 }
 
 .btn-big-primary:hover {
-  background: var(--navy-800);
+  background: var(--blue-50);
+  transform: translateY(-1px);
 }
 
-/* Stock list, Pricing list — placeholders for now */
 .stock-list, .pricing-list, .achievements-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Placeholder cards for unbuilt features */
 .placeholder-card {
   background: var(--white);
   border-radius: var(--radius);
   padding: 40px 20px;
   text-align: center;
-  color: var(--navy-400);
-  border: 2px dashed var(--navy-200);
+  color: var(--text-400);
+  border: 2px dashed var(--card-border);
 }
 
 .placeholder-icon {
@@ -565,15 +570,14 @@ body {
   margin-bottom: 12px;
 }
 
-/* Premium view */
 .premium-hero {
-  background: linear-gradient(135deg, var(--navy-900), #4c1d95);
+  background: linear-gradient(135deg, var(--blue-700), var(--blue-500));
   border-radius: var(--radius-lg);
   padding: 28px 20px;
   text-align: center;
   color: var(--white);
   margin-bottom: 20px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-blue);
 }
 
 .premium-price {
@@ -586,13 +590,13 @@ body {
 
 .premium-price span {
   font-size: 1rem;
-  color: var(--navy-200);
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
 }
 
 .premium-desc {
   font-size: 0.95rem;
-  color: var(--navy-200);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .premium-features {
@@ -601,14 +605,15 @@ body {
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--card-border);
 }
 
 .premium-feature {
   padding: 10px 0;
-  border-bottom: 1px solid var(--navy-100);
+  border-bottom: 1px solid var(--card-border);
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--navy-700);
+  color: var(--text-700);
 }
 
 .premium-feature:last-child {
@@ -616,41 +621,41 @@ body {
 }
 
 .btn-premium-big {
-  background: linear-gradient(135deg, var(--gold-500), var(--gold-400)) !important;
-  color: var(--navy-900) !important;
-  box-shadow: var(--shadow-gold);
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-500)) !important;
+  color: var(--white) !important;
+  box-shadow: var(--shadow-blue);
   padding: 18px !important;
   font-size: 1rem !important;
 }
 
 .premium-note {
   font-size: 0.75rem;
-  color: var(--navy-400);
+  color: var(--text-500);
   text-align: center;
   margin-top: 12px;
 }
 
 .premium-note-small {
   font-size: 0.7rem;
-  color: var(--navy-400);
+  color: var(--text-400);
   text-align: center;
   margin-top: 6px;
 }
 
-/* Settings view */
 .settings-card {
   background: var(--white);
   border-radius: var(--radius);
   padding: 4px 20px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--card-border);
 }
 
 .settings-row {
   display: flex;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid var(--navy-100);
+  border-bottom: 1px solid var(--card-border);
   font-size: 0.9rem;
 }
 
@@ -659,12 +664,12 @@ body {
 }
 
 .settings-label {
-  color: var(--navy-500);
+  color: var(--text-500);
   font-weight: 600;
 }
 
 .settings-value {
-  color: var(--navy-800);
+  color: var(--text-900);
   font-weight: 700;
 }
 
@@ -691,7 +696,7 @@ body {
 
 .settings-note {
   font-size: 0.75rem;
-  color: var(--navy-400);
+  color: var(--text-500);
   text-align: center;
   margin-top: 12px;
 }
@@ -706,12 +711,12 @@ body {
   left: 0;
   right: 0;
   background: var(--white);
-  border-top: 1px solid var(--navy-100);
+  border-top: 1px solid var(--card-border);
   display: flex;
   justify-content: space-around;
   padding: 8px 4px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -4px 16px rgba(37, 99, 235, 0.08);
   z-index: 100;
 }
 
@@ -725,7 +730,7 @@ body {
   gap: 2px;
   padding: 6px 2px;
   cursor: pointer;
-  color: var(--navy-400);
+  color: var(--text-400);
   font-family: var(--font);
   font-size: 0.6rem;
   font-weight: 700;
@@ -740,11 +745,11 @@ body {
 }
 
 .nav-btn.active {
-  color: var(--gold-600);
+  color: var(--blue-600);
 }
 
 .nav-btn:hover {
-  background: var(--navy-50);
+  background: var(--blue-50);
 }
 
 /* ============================================
@@ -766,20 +771,20 @@ body {
 }
 
 .toast {
-  background: var(--navy-800);
-  color: var(--white);
+  background: var(--white);
+  color: var(--text-900);
   padding: 14px 18px;
   border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: 600;
   box-shadow: var(--shadow-lg);
   animation: slideDown 0.3s ease;
-  border-left: 4px solid var(--gold-500);
+  border-left: 4px solid var(--blue-500);
 }
 
-.toast.success { border-left-color: var(--green-500); }
+.toast.success { border-left-color: var(--mint-500); }
 .toast.error { border-left-color: var(--red-500); }
-.toast.info { border-left-color: var(--navy-500); }
+.toast.info { border-left-color: var(--blue-500); }
 
 @keyframes slideDown {
   from { transform: translate(-50%, -100%); opacity: 0; }
@@ -796,7 +801,7 @@ body {
     margin: 0 auto;
     width: 100%;
   }
-  
+
   .game-nav {
     max-width: 720px;
     margin: 0 auto;
@@ -804,11 +809,11 @@ body {
     transform: translateX(-50%);
     border-radius: var(--radius) var(--radius) 0 0;
   }
-  
+
   .stat-grid {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .landing-features {
     grid-template-columns: repeat(4, 1fr);
   }
