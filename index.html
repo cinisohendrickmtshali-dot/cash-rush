@@ -207,5 +207,16 @@
 <script src="js/storage.js"></script>
 <script src="js/achievements.js"></script>
 <script src="js/game.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('SW registered:', reg.scope);
+    }).catch(function(err) {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+</script>
 </body>
 </html>
