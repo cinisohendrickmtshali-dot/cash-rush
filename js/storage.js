@@ -1,21 +1,22 @@
 /* ============================================
    CASH RUSH — Save & Load System
-   Version 0.1
-   
-   Handles saving the game to localStorage
-   and loading it back when the player returns.
+   Version 0.3
+   Includes premium unlock flag
    ============================================ */
 
 const SAVE_KEY = 'cash_rush_save_v1';
 
-/* Create a brand-new game state */
+/* Free tier limits */
+const FREE_MAX_DAY = 5;
+const FREE_PRODUCT_IDS = ['bread', 'milk', 'water', 'soda', 'chips'];
+
 function createNewGame() {
   return {
-    version: 1,
+    version: 3,
     day: 1,
     cash: 500,
     level: 1,
-    inventory: {},          // { productId: { stock, price } }
+    inventory: {},
     totalRevenue: 0,
     totalProfit: 0,
     totalCustomers: 0,
@@ -23,11 +24,11 @@ function createNewGame() {
     achievementsUnlocked: [],
     lastPlayed: new Date().toISOString(),
     tutorialSeen: false,
-    dailyHistory: []        // Last 30 daily reports
+    dailyHistory: [],
+    premiumUnlocked: false    // ← New in V0.3
   };
 }
 
-/* Save the game to localStorage */
 function saveGame(state) {
   try {
     state.lastPlayed = new Date().toISOString();
@@ -39,8 +40,6 @@ function saveGame(state) {
   }
 }
 
-/* Load the game from localStorage.
-   Returns null if no save exists. */
 function loadGame() {
   try {
     var raw = localStorage.getItem(SAVE_KEY);
@@ -48,6 +47,10 @@ function loadGame() {
     var state = JSON.parse(raw);
     if (!state || typeof state !== 'object') return null;
     if (!state.version) return null;
+    // Migrate old saves — add premium field if missing
+    if (state.premiumUnlocked === undefined) {
+      state.premiumUnlocked = false;
+    }
     return state;
   } catch (err) {
     console.error('Load error:', err);
@@ -55,7 +58,6 @@ function loadGame() {
   }
 }
 
-/* Delete the saved game (used by Reset Game) */
 function deleteSave() {
   try {
     localStorage.removeItem(SAVE_KEY);
@@ -65,16 +67,18 @@ function deleteSave() {
   }
 }
 
-/* Check if a save exists */
 function hasSave() {
   return localStorage.getItem(SAVE_KEY) !== null;
 }
 
-/* Auto-save on certain events (debounced) */
+function isPremium(state) {
+  return state && state.premiumUnlocked === true;
+}
+
 var _autoSaveTimer = null;
 function autoSave(state) {
   if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(function() {
     saveGame(state);
   }, 500);
-}
+}S
